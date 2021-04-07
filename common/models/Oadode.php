@@ -38,9 +38,25 @@ class Oadode extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['legal_name', 'business_name', 'business_address', 'business_mailing_address', 'business_phone', 'business_email', 'business_title', 'application_id', 'customer_id', 'user_id', 'application_type', 'lang'], 'required'],
             [['application_id', 'customer_id', 'user_id', 'application_type', 'lang'], 'integer'],
-            [['legal_name', 'business_name', 'business_address', 'business_mailing_address', 'business_phone', 'business_fax', 'business_email', 'business_title'], 'string', 'max' => 255],
+            [['legal_name', 'business_name', 'business_address', 'business_mailing_address', 'business_phone', 'business_fax', 'business_email'], 'string', 'max' => 255],
+            ['business_title', 'checkTitles'],
         ];
+    }
+
+    public function checkTitles($attribute, $params)
+    {
+        if ($this->business_title) {
+            $titles = explode(',', $this->business_title);
+            if (in_array('officer', $titles) && in_array('director', $titles)) {
+                $this->addError($attribute, 'Provided titles are not valid.');
+            } else if (in_array('director', $titles) && in_array('employee', $titles)) {
+                $this->addError($attribute, 'Provided titles are not valid.');
+            }
+        } else {
+            $this->addError($attribute, 'Provided titles are not valid.');
+        }
     }
 
     /**
@@ -53,16 +69,16 @@ class Oadode extends \yii\db\ActiveRecord
             'application_id' => 'Application ID',
             'customer_id' => 'Customer ID',
             'user_id' => 'User ID',
-            'legal_name' => 'Legal Name',
-            'business_name' => 'Business Name',
-            'business_address' => 'Business Address',
-            'business_mailing_address' => 'Business Mailing Address',
-            'business_phone' => 'Business Phone',
-            'business_fax' => 'Business Fax',
-            'business_email' => 'Business Email',
-            'application_type' => 'Application Type',
-            'business_title' => 'Business Title',
-            'lang' => 'Lang',
+            'legal_name' => '1. Legal Name',
+            'business_name' => '2. Business Name (if different from legal name)',
+            'business_address' => '3. Civic Address',
+            'business_mailing_address' => '4. Business Mailing Address (if different from civic address)',
+            'business_phone' => '5. Business Phone',
+            'business_fax' => '6. Business Fax',
+            'business_email' => '7. Business Email',
+            'application_type' => '9. Type of Application',
+            'business_title' => '10. Business Title (Select all that apply)',
+            'lang' => '11. Preferred Language of Correspondence',
         ];
     }
 }
